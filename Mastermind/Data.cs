@@ -78,7 +78,7 @@ namespace Mastermind
             ResetBooleans();
             return points;
         }
-        private static void ResetBooleans()
+        public static void ResetBooleans()
         {
             Color1LabelAdded = false;
             Color2LabelAdded = false;
@@ -134,11 +134,13 @@ namespace Mastermind
             {
                 StopCountdown();
                 IncreaseAttempst();
+                Score -= 8;
             }
         }
         public static void StopCountdown()
         {
             timer.Stop();
+            secondsPassed = 0;
         }
         public static bool CheckGameOver()
         {
@@ -150,6 +152,14 @@ namespace Mastermind
             {
                 return false;
             }
+        }
+        public static void ResetGame()
+        {
+            Score = 100;
+            secondsPassed = 0;
+            Attempts = 1;
+
+            GenerateRandomColorCode();
         }
     }
 }

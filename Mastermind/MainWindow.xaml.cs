@@ -23,6 +23,7 @@ namespace Mastermind
     {
         DispatcherTimer titleUpdate = new DispatcherTimer();
         List<StackPanel> stackPanels = new List<StackPanel>();
+        int timesvalidated;
         public MainWindow()
         {
             InitializeComponent();
@@ -37,22 +38,31 @@ namespace Mastermind
             stackPanels.Add(StackColor2);
             stackPanels.Add(StackColor3);
             stackPanels.Add(StackColor4);
+            timesvalidated = 0;
         }
         public void Update(Object sender, EventArgs e)
         {
             this.Title = $"Poging {Data.Attempts}";
-            if (Data.Attempts - StackColor1.Children.Count > 1)
+            if (Data.Attempts - timesvalidated > 1)
             {
-                foreach(StackPanel stackpanel in stackPanels)
+                foreach(StackPanel stack in stackPanels)
                 {
+                    if(stack.Children.Count - timesvalidated > 0)
+                    {
+                        stack.Children.RemoveAt(timesvalidated);
+                    }
+
                     Label label = new Label();
                     label.Height = 32;
-                    label.Width = 37;
+                    label.Width = 32;
                     label.Margin = new Thickness(5, 0, 5, 0);
                     label.Background = Brushes.DarkSlateGray;
 
-                    stackpanel.Children.Add(label);
+                    stack.Children.Add(label);
                 }
+                ClearComboBoxSelection();
+                Data.ResetBooleans();
+                timesvalidated++;
             }
         }
         private void FillComboBoxes()
@@ -98,7 +108,7 @@ namespace Mastermind
             {
                 Label label = new Label();
                 label.Height = 32;
-                label.Width = 37;
+                label.Width = 32;
                 label.Margin = new Thickness(5, 0, 5, 0);
 
                 label.Background = GetColorBrush(comboBox);
@@ -122,6 +132,7 @@ namespace Mastermind
         {
             if(CboColor1.SelectedIndex != -1 && CboColor2.SelectedIndex != -1 && CboColor3.SelectedIndex != -1 && CboColor4.SelectedIndex != -1)
             {
+                timesvalidated++;
                 Data.StopCountdown();
                 List<int> points = Data.ValidateColorCode(new List<string> { CboColor1.SelectedValue.ToString(), CboColor2.SelectedValue.ToString(), CboColor3.SelectedValue.ToString(), CboColor4.SelectedValue.ToString() });
                 List<StackPanel> stackPanels = new List<StackPanel>() { StackColor1, StackColor2, StackColor3, StackColor4 };
@@ -133,11 +144,41 @@ namespace Mastermind
                 Data.IncreaseAttempst();
                 if (!Data.CheckGameOver())
                 {
-                    Data.StartCountdown();
+                    int score = 0;
+                    foreach (int point in points)
+                    {
+                        score += point;
+                    }
+                    if (score == 8)
+                    {
+                        MessageBoxResult answer = MessageBox.Show($"You Managed to crack the right code, you hade a score of {Data.Score}! Want to try again?", "You won", MessageBoxButton.YesNo);
+                        if (answer == MessageBoxResult.No)
+                        {
+                            this.Close();
+                        }
+                        else
+                        {
+                            Data.ResetGame();
+                            ClearUI();
+                        }
+                    }
+                    else
+                    {
+                        Data.StartCountdown();
+                    }
                 }
                 else
                 {
-                    MessageBox.Show($"You did not manage to crack the right code, the correct code was {string.Join(" ", Data.ColorCode)}. Better luck next time!", "Game over");
+                    MessageBoxResult answer = MessageBox.Show($"You did not manage to crack the right code, the correct code was {string.Join(" ", Data.ColorCode)}. Better luck next time! Want to try again?", "Game over", MessageBoxButton.YesNo);
+                    if (answer == MessageBoxResult.No)
+                    {
+                        this.Close();
+                    }
+                    else
+                    {
+                        Data.ResetGame();
+                        ClearUI();
+                    }
                 }
 
             }
@@ -174,6 +215,16 @@ namespace Mastermind
             {
                 Data.ToggleDebug(ColorCodeTextbox);
             }
+        }
+
+        private void ClearUI()
+        {
+            foreach (StackPanel stack in stackPanels)
+            {
+                stack.Children.Clear();
+            }
+            ColorCodeTextbox.Clear();
+            timesvalidated = 0;
         }
     }
 }
