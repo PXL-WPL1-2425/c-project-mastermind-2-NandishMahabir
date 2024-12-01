@@ -226,5 +226,14 @@ namespace Mastermind
             ColorCodeTextbox.Clear();
             timesvalidated = 0;
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Do you really want to close the game?", "Are you sure?", MessageBoxButton.YesNo);
+            if(result == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }
